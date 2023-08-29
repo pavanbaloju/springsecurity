@@ -12,7 +12,10 @@ public class CustomSecurityConfig {
 
     @Bean
     SecurityFilterChain customSecurityFilterChain(HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
+        return http
+            .authorizeHttpRequests(requests -> requests
+                .requestMatchers("/myAccount", "/myLoans", "/myBalance", "/myCards").authenticated()
+                .requestMatchers("/notices", "/contact").permitAll())
             .formLogin(withDefaults()) // to allow api requests with UI login
             .httpBasic(withDefaults()) // to allow api requests with login from say postman
             .build();
