@@ -8,7 +8,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+
+import javax.sql.DataSource;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -25,13 +28,18 @@ public class CustomSecurityConfig {
             .httpBasic(withDefaults()) // to allow api requests with login from say postman
             .build();
     }
+//
+//    @Bean
+//    public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
+//        UserDetails adminUserDetails = User.withUsername("admin").password("12345").authorities("admin").build();
+//        UserDetails userDetails = User.withUsername("user").password("12345").authorities("read").build();
+//
+//        return new InMemoryUserDetailsManager(userDetails, adminUserDetails);
+//    }
 
     @Bean
-    public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
-        UserDetails adminUserDetails = User.withUsername("admin").password("12345").authorities("admin").build();
-        UserDetails userDetails = User.withUsername("user").password("12345").authorities("read").build();
-
-        return new InMemoryUserDetailsManager(userDetails, adminUserDetails);
+    public JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource) {
+        return new JdbcUserDetailsManager(dataSource);
     }
 
     @Bean
