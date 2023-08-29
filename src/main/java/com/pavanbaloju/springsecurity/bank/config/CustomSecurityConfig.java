@@ -1,4 +1,4 @@
-package com.pavanbaloju.springsecurity.bank.controller.config;
+package com.pavanbaloju.springsecurity.bank.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,11 +36,11 @@ public class CustomSecurityConfig {
 //
 //        return new InMemoryUserDetailsManager(userDetails, adminUserDetails);
 //    }
-
-    @Bean
-    public JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource) {
-        return new JdbcUserDetailsManager(dataSource);
-    }
+//
+//    @Bean
+//    public JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource) {
+//        return new JdbcUserDetailsManager(dataSource);
+//    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
