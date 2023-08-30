@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.Optional;
 
-@Service
+//@Service
 public class BankUserDetailsService implements UserDetailsService {
 
     private final CustomerRepository customerRepository;
