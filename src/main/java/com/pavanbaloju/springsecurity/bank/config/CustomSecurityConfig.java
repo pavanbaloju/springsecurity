@@ -1,5 +1,6 @@
 package com.pavanbaloju.springsecurity.bank.config;
 
+import com.pavanbaloju.springsecurity.bank.filter.LoggingFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -7,6 +8,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -20,6 +22,7 @@ public class CustomSecurityConfig {
             .authorizeHttpRequests(requests -> requests
                 .requestMatchers("/myAccount", "/myLoans", "/myBalance", "/myCards").authenticated()
                 .requestMatchers("/notices", "/contact", "/register").permitAll())
+            .addFilterBefore(new LoggingFilter(), BasicAuthenticationFilter.class)
             .formLogin(withDefaults()) // to allow api requests with UI login
             .httpBasic(withDefaults()) // to allow api requests with login from say postman
             .build();
