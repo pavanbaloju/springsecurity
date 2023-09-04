@@ -41,7 +41,10 @@ public class CustomSecurityConfig {
             .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(request -> getCorsConfiguration()))
             .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
             .authorizeHttpRequests(requests -> requests
-                .requestMatchers("/myAccount", "/myLoans", "/myBalance", "/myCards").authenticated()
+                .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
+                .requestMatchers("/myBalance").hasAnyAuthority("VIEWACCOUNT", "VIEWBALANCE")
+                .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
+                .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
                 .requestMatchers("/notices", "/contact", "/register").permitAll())
             .formLogin(withDefaults()) // to allow api requests with UI login
             .httpBasic(withDefaults()) // to allow api requests with login from say postman

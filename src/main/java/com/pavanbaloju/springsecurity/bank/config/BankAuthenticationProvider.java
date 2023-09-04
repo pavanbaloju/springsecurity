@@ -11,7 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -33,7 +33,8 @@ public class BankAuthenticationProvider implements AuthenticationProvider {
         Customer customer = getCustomer(username);
 
         if (passwordEncoder.matches(pwd, customer.getPwd())) {
-            return new UsernamePasswordAuthenticationToken(username, pwd, Collections.singleton(new SimpleGrantedAuthority(customer.getRole())));
+            List<SimpleGrantedAuthority> simpleGrantedAuthorities = customer.getAuthorities().stream().map(authority -> new SimpleGrantedAuthority(authority.getName())).toList();
+            return new UsernamePasswordAuthenticationToken(username, pwd, simpleGrantedAuthorities);
         } else {
             throw new BadCredentialsException("Invalid password");
         }
