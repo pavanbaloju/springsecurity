@@ -14,9 +14,25 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
 
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'spring-security'
+      MYSQL_USER: 'mysql'
+      MYSQL_PASSWORD: 'mysql'
+      MYSQL_ROOT_PASSWORD: 'mysql'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - my-db:/var/lib/mysql
+
 volumes:
   db:
     driver: local
+  my-db:
 
 networks:
   default:

@@ -1,31 +1,56 @@
 package com.pavanbaloju.springsecurity.bank.controller;
 
 import com.pavanbaloju.springsecurity.bank.entity.Customer;
-import com.pavanbaloju.springsecurity.bank.service.LoginService;
+import com.pavanbaloju.springsecurity.bank.repository.CustomerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import java.sql.Date;
+import java.util.Optional;
 
 @RestController
 public class LoginController {
 
-    private final LoginService loginService;
+    @Autowired
+    private CustomerRepository customerRepository;
 
-    public LoginController(LoginService loginService) {
-        this.loginService = loginService;
-    }
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody Customer customer) {
+    public ResponseEntity<String> registerUser(@RequestBody Customer customer) {
+        Customer savedCustomer = null;
+        ResponseEntity<String> response = null;
         try {
-            loginService.createUser(customer);
-            return ResponseEntity.status(CREATED).body("User registration successful");
-        } catch (Exception e) {
-            return ResponseEntity.status(INTERNAL_SERVER_ERROR).body("User registration failed");
+            String hashPwd = passwordEncoder.encode(customer.getPwd());
+            customer.setPwd(hashPwd);
+            customer.setCreateDt(String.valueOf(new Date(System.currentTimeMillis())));
+            savedCustomer = customerRepository.save(customer);
+            if (savedCustomer.getId() > 0) {
+                response = ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body("Given user details are successfully registered");
+            }
+        } catch (Exception ex) {
+            response = ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("An exception occured due to " + ex.getMessage());
         }
+        return response;
     }
+
+    @RequestMapping("/user")
+    public Customer getUserDetailsAfterLogin(Authentication authentication) {
+        Optional<Customer> customerOptional = customerRepository.findByEmail(authentication.getName());
+        return customerOptional.orElse(null);
+
+    }
+
 }
