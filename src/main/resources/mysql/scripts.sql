@@ -230,7 +230,8 @@ INSERT INTO `authorities` (`customer_id`, `name`)
 VALUES (1, 'VIEWBALANCE');
 
 DELETE
-FROM `authorities`;
+FROM `authorities`
+WHERE customer_id = 1;
 
 INSERT INTO `authorities` (`customer_id`, `name`)
 VALUES (1, 'ROLE_USER');
