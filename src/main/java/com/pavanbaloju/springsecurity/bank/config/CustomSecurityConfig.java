@@ -1,14 +1,11 @@
 package com.pavanbaloju.springsecurity.bank.config;
 
 import com.pavanbaloju.springsecurity.bank.filter.CsrfCookieFilter;
-import com.pavanbaloju.springsecurity.bank.filter.JWTTokenGeneratorFilter;
-import com.pavanbaloju.springsecurity.bank.filter.JWTTokenValidatorFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -16,9 +13,6 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Collections;
-
-import static com.pavanbaloju.springsecurity.bank.constants.SecurityConstants.JWT_HEADER;
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 public class CustomSecurityConfig {
@@ -28,9 +22,15 @@ public class CustomSecurityConfig {
         corsConfiguration.setAllowedOrigins(Collections.singletonList("*"));
         corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
         corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
-        corsConfiguration.setExposedHeaders(Collections.singletonList(JWT_HEADER));
+        corsConfiguration.setExposedHeaders(Collections.singletonList("Authorization"));
         corsConfiguration.setAllowCredentials(true);
         return corsConfiguration;
+    }
+
+    private static JwtAuthenticationConverter getJwtAuthenticationConverter() {
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
+        return jwtAuthenticationConverter;
     }
 
     @Bean
@@ -43,8 +43,6 @@ public class CustomSecurityConfig {
             )
             .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(request -> getCorsConfiguration()))
             .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-            .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
-            .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
             .authorizeHttpRequests(requests -> requests
                 .requestMatchers("/myAccount").hasRole("USER")
                 .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN") //In db, role should have prefix as `ROLE_` but here not required
@@ -52,13 +50,8 @@ public class CustomSecurityConfig {
                 .requestMatchers("/myCards").hasRole("USER")
                 .requestMatchers("/user").authenticated()
                 .requestMatchers("/notices", "/contact", "/register").permitAll())
-            .formLogin(withDefaults()) // to allow api requests with UI login
-            .httpBasic(withDefaults()) // to allow api requests with login from say postman
+            .oauth2ResourceServer(httpSecurityOAuth2ResourceServerConfigurer ->
+                httpSecurityOAuth2ResourceServerConfigurer.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(getJwtAuthenticationConverter())))
             .build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }

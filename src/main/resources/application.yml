@@ -11,3 +11,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://keycloak.com.au:8180/realms/spring-security-dev/protocol/openid-connect/certs
